@@ -1,4 +1,4 @@
 <?php
 
-echo "HOLA MUNDO"
+include './src/controller/peliculasController.php';
 ?>
