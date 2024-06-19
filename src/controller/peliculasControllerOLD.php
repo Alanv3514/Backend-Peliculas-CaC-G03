@@ -20,15 +20,15 @@ require './src/model/peliculasModel.php';
 
 $PeliculasModel= new peliculasModel();
 
+switch($_SERVER['REQUEST_METHOD']){
 
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-       
+    case 'GET':
         $respuesta = (!isset($_GET['id'])) ? $PeliculasModel->getPeliculas() : $PeliculasModel->getPeliculas($_GET['id']);
         echo json_encode($respuesta);
-    }
+    break;
+
     
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-     
+    case 'POST':       
         // para subir el archivo de imagen desde la PC
         if (isset($_FILES['img_url']) && $_FILES['img_url']['error'] === UPLOAD_ERR_OK) {
             $fileTmpPath = $_FILES['img_url']['tmp_name'];
@@ -121,17 +121,14 @@ $PeliculasModel= new peliculasModel();
             header("Location: http://localhost:8000/pages/adminpeliculas.php");
         }
         exit();
-        
+        break;
         }
-    }
-
-    
-       if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method']) && strtoupper($_POST['_method']) === 'PUT') { 
-        parse_str(file_get_contents("php://input"), $_PUT);
+     
+    case 'PUT':
         $_PUT= json_decode(file_get_contents('php://input',true));
-        
 
-        if(!isset($_PUT->id) || is_null($_PUT->id) || empty(trim($_PUT->id))){         
+        if(!isset($_PUT->id) || is_null($_PUT->id) || empty(trim($_PUT->id))){
+            $respuesta= ['error','El ID del pelicula no debe estar vacío'];
         }
         else if(!isset($_PUT->titulo) || is_null($_PUT->titulo) || empty(trim($_PUT->titulo)) || strlen($_PUT->titulo) > 80){
             $respuesta= ['error','El nombre de la pelicula no debe estar vacío y no debe de tener más de 80 caracteres'];
@@ -176,13 +173,11 @@ $PeliculasModel= new peliculasModel();
                 $_PUT->img_url);
         }
         echo json_encode($respuesta);
-    }
+    break;
 
 
-      if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        parse_str(file_get_contents("php://input"), $_DELETE);
+    case 'DELETE';
         $_DELETE= json_decode(file_get_contents('php://input',true));
-
         if(!isset($_DELETE->id) || is_null($_DELETE->id) || empty(trim($_DELETE->id))){
             $respuesta= ['error','El ID del pelicula no debe estar vacío'];
         }
@@ -190,7 +185,7 @@ $PeliculasModel= new peliculasModel();
             $respuesta = $PeliculasModel->deletePeliculas($_DELETE->id);
         }
         echo json_encode($respuesta);
-    }
-
+    break;
+}
 
 ?>
