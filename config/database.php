@@ -1,18 +1,13 @@
 <?php
-
-return [
-    'database' => [
+    $db = [
         'driver'    => 'mysql',
         'host'      => getenv('DATABASE_HOST'),
-        'name'  => getenv('DATABASE_NAME'),
+        'db'  => getenv('DATABASE_NAME'),
         'username'  => getenv('DATABASE_USERNAME'),
         'password'  => getenv('DATABASE_PASSWORD'),
         'port'=> getenv('DATABASE_PORT'),
         'charset'   => 'utf8',
         'collation' => 'utf8_unicode_ci',
-        'prefix'    => '',
-    ],
-];
-
-
+        'prefix'    => '', //Cambiar al nombre de tu base de datos
+    ];
 ?>
