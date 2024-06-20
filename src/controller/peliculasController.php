@@ -16,7 +16,7 @@ file_put_contents('php://stderr', print_r($_FILES, true));
 
 
 require './src/model/peliculasModel.php';
-//require 'upload.php';
+
 
 $PeliculasModel= new peliculasModel();
 
@@ -66,7 +66,7 @@ $PeliculasModel= new peliculasModel();
         $errores = [];
 
         if (!isset($_POST['titulo']) || is_null($_POST['titulo']) || empty(trim($_POST['titulo'])) || strlen($_POST['titulo']) > 100) {
-            $errores['error'] = 'El titulo de la pelicula no debe estar vacío y no debe de tener más de 80 caracteres';
+            $errores['error1'] = 'El titulo de la pelicula no debe estar vacío y no debe de tener más de 80 caracteres';
 
         } else if (!isset($_POST['genero']) || is_null($_POST['genero']) || empty(trim($_POST['genero'])) || strlen((string)$_POST['genero']) > 50) {
             $errores['error2'] = 'El genero del pelicula no debe estar vacío y no tener más de 50 caracteres';
@@ -131,8 +131,61 @@ $PeliculasModel= new peliculasModel();
         $_PUT= json_decode(file_get_contents('php://input',true));
         
 
-        if(!isset($_PUT->id) || is_null($_PUT->id) || empty(trim($_PUT->id))){         
+        // Inicializar una variable de respuesta
+        $respuesta = [];
+
+        // Validar los campos de los errores de cada campo de la BD
+        $errores = [];
+
+        if (!isset($_POST['titulo']) || is_null($_POST['titulo']) || empty(trim($_POST['titulo'])) || strlen($_POST['titulo']) > 100) {
+            $errores['error1'] = 'El titulo de la pelicula no debe estar vacío y no debe de tener más de 80 caracteres';
+
+        } else if (!isset($_POST['genero']) || is_null($_POST['genero']) || empty(trim($_POST['genero'])) || strlen((string)$_POST['genero']) > 50) {
+            $errores['error2'] = 'El genero del pelicula no debe estar vacío y no tener más de 50 caracteres';
+
+        } else if (!isset($_POST['calificacion']) || is_null($_POST['calificacion']) || empty(($_POST['calificacion'])) || strlen((string)$_POST['calificacion']) > 100) {
+            $errores['error3'] = 'La calificacion de la pelicula no debe estar vacío y no tener más de 100 caracteres';
+
+        } else if (!isset($_POST['descripcion']) || is_null($_POST['descripcion']) || empty(trim($_POST['descripcion'])) || strlen($_POST['descripcion']) > 150) {
+            $errores['error4'] = 'La descripción del pelicula no debe estar vacía y no debe de tener más de 150 caracteres';
+
+        } else if (!isset($_POST['anio']) || is_null($_POST['anio']) || empty(($_POST['anio'])) || !is_numeric($_POST['anio']) || strlen((string)$_POST['anio']) > 4) {
+            $errores['error5'] = 'El año de la pelicula no debe estar vacío, debe ser de tipo numérico y no tener más de 4 caracteres';
+
+        } else if (!isset($_POST['estrellas']) || is_null($_POST['estrellas']) || empty(($_POST['estrellas'])) || !is_numeric($_POST['estrellas']) || strlen((string)$_POST['estrellas']) > 4) {
+            $errores['error6'] = 'las estrellas de la pelicula no debe estar vacío, debe ser de tipo numérico y no tener más de 4 caracteres';
+
+        } else if (!isset($_POST['duracion']) || is_null($_POST['duracion']) || empty(($_POST['duracion'])) || !is_numeric($_POST['duracion']) || strlen((string)$_POST['duracion']) > 4) {
+            $errores['error7'] = 'La duración de la pelicula no debe estar vacío, debe ser de tipo numérico y no tener más de 4 caracteres';
+
+        } else if (!isset($_POST['img_url']) || is_null($_POST['img_url']) || empty(($_POST['img_url'])) || strlen((string)$_POST['img_url']) > 256) {
+            $errores['error8'] = 'La película debe tener una imágen';
         }
+
+
+        if (!empty($errores)) {
+            $query = http_build_query(array_merge($errores, $_POST));
+            header("Location:http://localhost:8000/pages/peliculaEditada?$query");
+            exit();
+        }
+
+             // Manejar el resultado de la operación para avisar el resultado en el frontend
+             if (isset($resultado) && $resultado[0] === 'success') {
+                $mensaje = $resultado[1];
+                $_SESSION['mensaje'] = $mensaje;
+                header("Location: http://localhost:8000/pages/peliculaEditada.php");
+            } else {
+                $error = isset($resultado) ? $resultado[1] : 'Error desconocido al guardar la película';
+                $_SESSION['error'] = $error;
+                header("Location: http://localhost:8000/pages/pelicilaEditada.php");
+            }
+            exit();
+            
+            
+
+/*
+        if(!isset($_PUT->id) || is_null($_PUT->id) || empty(trim($_PUT->id))){         
+       }
         else if(!isset($_PUT->titulo) || is_null($_PUT->titulo) || empty(trim($_PUT->titulo)) || strlen($_PUT->titulo) > 80){
             $respuesta= ['error','El nombre de la pelicula no debe estar vacío y no debe de tener más de 80 caracteres'];
         }
@@ -160,9 +213,15 @@ $PeliculasModel= new peliculasModel();
         }
         // Validar el campo img_url
         else if(!isset($_PUT->img_url) || is_null($_PUT->img_url) || empty(($_PUT->img_url)) || !is_numeric($_PUT->img_url) || strlen((string)$_PUT->img_url) > 256){
-            $respuesta = ['error', 'La película debe tener una imágen'];
+            $respuesta = ['error', 'La película necesita una imágen'];
         }
 
+
+
+
+
+
+        // Si todas las validaciones pasan es decir no hay errores
         else{
             $respuesta = $PeliculasModel->updatePeliculas(
                 $_PUT->id, 
@@ -176,6 +235,7 @@ $PeliculasModel= new peliculasModel();
                 $_PUT->img_url);
         }
         echo json_encode($respuesta);
+        */
     }
 
 

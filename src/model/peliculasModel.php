@@ -94,7 +94,7 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
             $valida = $this->validatePeliculas($id,$titulo, $descripcion,$genero,$calificacion,$anio,$estrellas,$duracion,$img_url);
             $resultado=['error','Ya existe una película igual'];
             if(count($valida)==0){
-                $sql="UPDATE Peliculas SET titulo='$titulo', descripcion='$descripcion',genero='$genero',calificacion='$calificacion',anio='$anio',estrellas='$estrellas'
+                $sql="UPDATE peliculas SET titulo='$titulo', descripcion='$descripcion',genero='$genero',calificacion='$calificacion',anio='$anio',estrellas='$estrellas'
                              ,duracion='$duracion',img_url='$img_url' WHERE id='$id' ";
                 mysqli_query($this->conexion,$sql);
                 $resultado=['success','Pelicula actualizada'];
