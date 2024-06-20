@@ -20,14 +20,15 @@ require './src/model/peliculasModel.php';
 
 $PeliculasModel= new peliculasModel();
 
-
+    /* ***************************************************************************************************************************************** */
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
        
         $respuesta = (!isset($_GET['id'])) ? $PeliculasModel->getPeliculas() : $PeliculasModel->getPeliculas($_GET['id']);
         echo json_encode($respuesta);
     }
     
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /* ****************************************************************************************************************************************** */
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ( !isset($_POST['_method']) || strtoupper($_POST['_method']) !== 'PUT')) {
      
         // para subir el archivo de imagen desde la PC
         if (isset($_FILES['img_url']) && $_FILES['img_url']['error'] === UPLOAD_ERR_OK) {
@@ -123,13 +124,43 @@ $PeliculasModel= new peliculasModel();
         exit();
         
         }
-    }
-
-    
+    }   /* ******************************************************************************************************************************************************
+           manejamos el PUT como POST, no pude que hacer que funcione como PUT,
+           asi que verificamos que venga x POST pero con _method=PUT, arriba
+           en le POST verificamos que no sea _method=PUT */
        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['_method']) && strtoupper($_POST['_method']) === 'PUT') { 
         parse_str(file_get_contents("php://input"), $_PUT);
         $_PUT= json_decode(file_get_contents('php://input',true));
-        
+
+         // para subir el archivo de imagen desde la PC
+         if (isset($_FILES['img_url']) && $_FILES['img_url']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['img_url']['tmp_name'];
+            $fileName = $_FILES['img_url']['name'];
+            $fileSize = $_FILES['img_url']['size'];
+            $fileType = $_FILES['img_url']['type'];
+            $fileNameCmps = explode(".", $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+            $allowedfileExtensions = array('jpg', 'jpeg', 'png');
+            
+            if (in_array($fileExtension, $allowedfileExtensions)) {
+                $uploadFileDir = './assets/img/';
+                $dest_path = $uploadFileDir . $fileName;
+                
+                if(move_uploaded_file($fileTmpPath, $dest_path)) {
+                    $message ='Archivo subido correctamente.';
+                    $_POST['img_url'] = $dest_path;
+                } else {
+                    $message = 'Error al mover el archivo subido.';
+                    $_POST['img_url'] = '';
+                }
+            } else {
+                $message = 'Tipo de archivo no permitido. Solo archivos JPG, JPEG y PNG son permitidos.';
+                $_POST['img_url'] = '';
+            }
+        } else {
+            $message = 'No se subió ningún archivo.';
+            $_POST['img_url'] = '';
+        }
 
         // Inicializar una variable de respuesta
         $respuesta = [];
@@ -165,20 +196,37 @@ $PeliculasModel= new peliculasModel();
 
         if (!empty($errores)) {
             $query = http_build_query(array_merge($errores, $_POST));
-            header("Location:http://localhost:8000/pages/peliculaEditada?$query");
+            header("Location:http://localhost:8000/pages/peliculaEditada.php?$query");
             exit();
         }
 
+         // Si todas las validaciones pasan es decir no hay errores
+         else{
+            $respuesta = $PeliculasModel->updatePeliculas(
+                $_POST['id'], 
+                $_POST['titulo'],
+                $_POST['descripcion'],
+                $_POST['genero'],                                              
+                $_POST['calificacion'], 
+                $_POST['anio'],
+                $_POST['estrellas'],                                           
+                $_POST['duracion'], 
+                $_POST['img_url']
+            );
+        }
+/*
              // Manejar el resultado de la operación para avisar el resultado en el frontend
              if (isset($resultado) && $resultado[0] === 'success') {
                 $mensaje = $resultado[1];
-                $_SESSION['mensaje'] = $mensaje;
-                header("Location: http://localhost:8000/pages/peliculaEditada.php");
+                //$_SESSION['mensaje'] = $mensaje;
+                header("Location: http://localhost:8000/pages/listados.html");
             } else {
                 $error = isset($resultado) ? $resultado[1] : 'Error desconocido al guardar la película';
                 $_SESSION['error'] = $error;
-                header("Location: http://localhost:8000/pages/pelicilaEditada.php");
+                header("Location: http://localhost:8000/pages/peliculaEditada.php");
             }
+                */
+                header("Location: http://localhost:8000/pages/listados.html");
             exit();
             
             
@@ -215,12 +263,6 @@ $PeliculasModel= new peliculasModel();
         else if(!isset($_PUT->img_url) || is_null($_PUT->img_url) || empty(($_PUT->img_url)) || !is_numeric($_PUT->img_url) || strlen((string)$_PUT->img_url) > 256){
             $respuesta = ['error', 'La película necesita una imágen'];
         }
-
-
-
-
-
-
         // Si todas las validaciones pasan es decir no hay errores
         else{
             $respuesta = $PeliculasModel->updatePeliculas(
@@ -238,7 +280,7 @@ $PeliculasModel= new peliculasModel();
         */
     }
 
-
+    /* ************************************************************************************************************************* */
       if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         parse_str(file_get_contents("php://input"), $_DELETE);
         $_DELETE= json_decode(file_get_contents('php://input',true));

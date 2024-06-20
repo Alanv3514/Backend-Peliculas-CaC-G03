@@ -91,14 +91,15 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
         $existe= $this->getPeliculas($id);
         $resultado=['error','No existe la película con ID '.$id];
         if(count($existe)>0){
-            $valida = $this->validatePeliculas($id,$titulo, $descripcion,$genero,$calificacion,$anio,$estrellas,$duracion,$img_url);
-            $resultado=['error','Ya existe una película igual'];
-            if(count($valida)==0){
+            //$valida = $this->validatePeliculas($id,$titulo, $descripcion,$genero,$calificacion,$anio,$estrellas,$duracion,$img_url);
+            //$resultado=['error','Ya existe una película igual'];
+            //if(count($valida)==0){
                 $sql="UPDATE peliculas SET titulo='$titulo', descripcion='$descripcion',genero='$genero',calificacion='$calificacion',anio='$anio',estrellas='$estrellas'
                              ,duracion='$duracion',img_url='$img_url' WHERE id='$id' ";
                 mysqli_query($this->conexion,$sql);
                 $resultado=['success','Pelicula actualizada'];
-            }
+          //  }
+        
         }
         return $resultado;
     }
