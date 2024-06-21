@@ -1,9 +1,25 @@
 <?php
 
+
+
 class PeliculasModel{
     public $conexion;
     public function __construct(){
-        $this->conexion = new mysqli('localhost','root','master4','db_peliculas_PHP');
+        //$this->conexion = new mysqli('localhost','root','master4','db_peliculas_PHP');
+        // Datos de conexión
+        $servername = $_ENV['DB_HOST'];                        // o la dirección del servidor MySQL
+        $username = $_ENV['DB_USERNAME'];                // nombre de usuario de MySQL
+        $password = $_ENV['DB_PASSWORD']; // contraseña del usuario de MySQL
+        $dbname = $_ENV['DB_DATABASE'];                  // nombre de la base de datos a la que te quieres conectar
+
+        // Crear conexión
+        $this->conexion = new mysqli($servername, $username, $password, $dbname);
+      
+        // Verificar conexión
+        if ($this->conexion->connect_error) {
+            die("Conexión fallida: " . $this->conexion->connect_error);
+        }
+        // Establecer el conjunto de caracteres a utf8
         mysqli_set_charset($this->conexion,'utf8');
     }
 
