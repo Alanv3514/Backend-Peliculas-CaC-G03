@@ -136,7 +136,18 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
             se revierte la transacción.*/
             $this->conexion->begin_transaction();
 
+            /*Cuando se elimina el registro de la base de datos que contiene la ruta de la imagen, 
+            también se debe eliminar la imagen física almacenada en la carpeta assets/img.
+            */
         try {
+            // Obtener la ruta de la imagen de la película
+            $stmt = $this->conexion->prepare("SELECT img_url FROM peliculas WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->bind_result($img_url);
+            $stmt->fetch();
+            $stmt->close();
+
             // Verificar si hay asociaciones en la tabla intermedia
             $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM director_pelicula WHERE pelicula_id = ?");
             $stmt->bind_param("i", $id);
@@ -159,10 +170,14 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
             $stmt->execute();
             $stmt->close();
 
+            // Eliminar la imagen del servidor
+            if ($img_url && file_exists($img_url)) {
+             unlink($img_url);
+            }
             // Confirmar la transacción
             $this->conexion->commit();
 
-            $resultado = ['success',"Película eliminada correctamente."] ;
+            $resultado = ['success',"Película  y su imagen eliminada correctamente."] ;
         } catch (Exception $e) {
             // Revertir la transacción en caso de error
             $this->conexion->rollback();
