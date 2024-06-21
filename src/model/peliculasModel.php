@@ -125,8 +125,52 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
         $valida = $this->getPeliculas($id);
         $resultado=['error','No existe la película con ID '.$id];
         if(count($valida)>0){
-            $sql="DELETE FROM peliculas WHERE id='$id' ";
-            mysqli_query($this->conexion,$sql);
+
+            //para borrar sin comprobar asociacion con tabla intermedia
+            //$sql="DELETE FROM peliculas WHERE id='$id' ";
+            //mysqli_query($this->conexion,$sql);
+
+            // Iniciar una transacción
+            /* Se utiliza una transacción para asegurar que ambas operaciones (eliminar asociaciones y
+            eliminar la película) se realicen de manera atómica. Si alguna operación falla, 
+            se revierte la transacción.*/
+            $this->conexion->begin_transaction();
+
+        try {
+            // Verificar si hay asociaciones en la tabla intermedia
+            $stmt = $this->conexion->prepare("SELECT COUNT(*) FROM director_pelicula WHERE pelicula_id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->bind_result($count);
+            $stmt->fetch();
+            $stmt->close();
+
+            if ($count > 0) {
+                // Eliminar las referencias en la tabla intermedia
+                $stmt = $this->conexion->prepare("DELETE FROM director_pelicula WHERE pelicula_id = ?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            // Luego Independientemente de si había asociaciones o no, se elimina la película de la tabla "peliculas"
+            $stmt = $this->conexion->prepare("DELETE FROM peliculas WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
+
+            // Confirmar la transacción
+            $this->conexion->commit();
+
+            $resultado = ['success',"Película eliminada correctamente."] ;
+        } catch (Exception $e) {
+            // Revertir la transacción en caso de error
+            $this->conexion->rollback();
+            $resultado = ['error',"Error al eliminar la película: " ] ;
+        }
+
+        $this->conexion->close();
+
             $resultado=['success','Pelicula eliminada'];
         }
         return $resultado;
