@@ -21,7 +21,7 @@ require './src/model/peliculasModel.php';
 $PeliculasModel= new peliculasModel();
 
     /* ***************************************************************************************************************************************** */
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($_GET['buscar'])) {
        
         $respuesta = (!isset($_GET['id'])) ? $PeliculasModel->getPeliculas() : $PeliculasModel->getPeliculas($_GET['id']);
         echo json_encode($respuesta);
@@ -279,6 +279,30 @@ $PeliculasModel= new peliculasModel();
         echo json_encode($respuesta);
         */
     }
+    /* *************************************************************************************************************************** */
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['buscar']) ){
+
+        
+            $buscar = $_GET['buscar'];
+
+
+            $resultados = $PeliculasModel->buscarPelicula($buscar);
+            //echo json_encode($resultados);
+
+            $peliculas = json_encode($resultados);
+            $_SESSION['peliculas'] = $peliculas;
+            header("Location: http://localhost:8000/pages/peliculaBuscada.php");
+            exit();
+
+
+    }
+
+
+
+
+
+
+
 
     /* ************************************************************************************************************************* */
       if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {

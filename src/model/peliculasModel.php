@@ -23,6 +23,7 @@ class PeliculasModel{
         mysqli_set_charset($this->conexion,'utf8');
     }
 
+    /* -------------------------------------------------------------------------------------------------------------------------------- */
     public function getPeliculas($id=null){
         $where = ($id == null) ? "" : " WHERE id='$id'";
         $Peliculas=[];
@@ -34,40 +35,41 @@ class PeliculasModel{
         return $Peliculas;
     }
 
+    /* ---------------------------------------------------------------------------------------------------------------------------------- */
+    public function validatePeliculas($titulo, $descripcion, $genero, $calificacion, $anio, $estrellas, $duracion, $img_url) {
+        $Peliculas = [];
 
-public function validatePeliculas($titulo, $descripcion, $genero, $calificacion, $anio, $estrellas, $duracion, $img_url) {
-    $Peliculas = [];
-
-    // Preparar la consulta
-    $sql = "SELECT * FROM peliculas WHERE titulo = ? AND descripcion = ? AND genero = ? AND calificacion = ? AND anio = ? AND estrellas = ? AND duracion = ? AND img_url = ?";
-    $stmt = $this->conexion->prepare($sql);
-    
-    if ($stmt === false) {
-        // Manejo del error de preparación de la consulta
-        die('Error en la preparación de la consulta: ' . $this->conexion->error);
-    }
-
-    // Vincular parámetros
-    $stmt->bind_param('ssssssss', $titulo, $descripcion, $genero, $calificacion, $anio, $estrellas, $duracion, $img_url);
-
-    // Ejecutar la consulta
-    $stmt->execute();
-
-    // Obtener el resultado
-    $result = $stmt->get_result();
-
-    // Verificar si hay registros encontrados
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            array_push($Peliculas, $row);
+        // Preparar la consulta
+        $sql = "SELECT * FROM peliculas WHERE titulo = ? AND descripcion = ? AND genero = ? AND calificacion = ? AND anio = ? AND estrellas = ? AND duracion = ? AND img_url = ?";
+        $stmt = $this->conexion->prepare($sql);
+        
+        if ($stmt === false) {
+            // Manejo del error de preparación de la consulta
+            die('Error en la preparación de la consulta: ' . $this->conexion->error);
         }
-    }
 
-    // Cerrar la declaración
-    $stmt->close();
+        // Vincular parámetros
+        $stmt->bind_param('ssssssss', $titulo, $descripcion, $genero, $calificacion, $anio, $estrellas, $duracion, $img_url);
 
-    return $Peliculas;
+        // Ejecutar la consulta
+        $stmt->execute();
+
+        // Obtener el resultado
+        $result = $stmt->get_result();
+
+        // Verificar si hay registros encontrados
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                array_push($Peliculas, $row);
+            }
+        }
+
+        // Cerrar la declaración
+        $stmt->close();
+
+        return $Peliculas;
 }
+    /* ------------------------------------------------------------------------------------------------------------------------------ */
 
     public function savePeliculas($titulo, $descripcion, $genero, $calificacion, $anio, $estrellas, $duracion, $img_url) {
         // Validar si la película ya existe
@@ -101,7 +103,7 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
         
         return $resultado;
     }
-
+    /* ------------------------------------------------------------------------------------------------------------------------------------------- */
    
     public function updatePeliculas($id, $titulo,$descripcion,$genero,$calificacion,$anio,$estrellas,$duracion,$img_url){
         $existe= $this->getPeliculas($id);
@@ -119,7 +121,31 @@ public function validatePeliculas($titulo, $descripcion, $genero, $calificacion,
         }
         return $resultado;
     }
-        
+        /* -------------------------------------------------------------------------------------------------------------------- */
+        public function buscarPelicula($buscar) {
+            $sql = "SELECT * FROM peliculas WHERE titulo LIKE ? OR descripcion LIKE ?";
+            $stmt = $this->conexion->prepare($sql);
+            
+            // Preparar el término de búsqueda para usarlo en la consulta
+            $likeBuscar = "%" . $this->conexion->real_escape_string($buscar) . "%";
+            
+            // Bind de parámetros y ejecución de la consulta
+            $stmt->bind_param('ss', $likeBuscar, $likeBuscar);
+            $stmt->execute();
+            
+            // Obtener los resultados de la consulta
+            $result = $stmt->get_result();
+            $peliculas = [];
+    
+            while ($row = $result->fetch_assoc()) {
+                $peliculas[] = $row;
+            }
+    
+            $stmt->close();
+            return $peliculas;
+        }
+
+            /* -------------------------------------------------------------------------------------------- */
     
     public function deletePeliculas($id){
         $valida = $this->getPeliculas($id);
