@@ -1,16 +1,9 @@
 <?php
 
 // Configuración de CORS
-
-//$allowedOrigins = array('http://127.0.0.1:5500', 'https://cac-movies.zeabur.app');
-
 header('Access-Control-Allow-Origin: *'); //acceso a todos
-
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-//header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-//header("Allow: GET, POST, OPTIONS, PUT, DELETE");
 header('content-type: application/json; charset=utf-8');
 
 // Manejar las solicitudes OPTIONS (preflight)
@@ -18,8 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-
 
 // Depuración de datos recibidos para ver en la consola del vsc
 file_put_contents('php://stderr', print_r($_POST, true));
@@ -239,7 +230,6 @@ $PeliculasModel= new peliculasModel();
         // vamos a simular un DELETE por GET ya que no funciona este método
         if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete' ){
             // Obtener datos del cuerpo de la solicitud
-            //parse_str(file_get_contents("php://input"), $_DELETE);
 
             // Intenta obtener el ID de la película de los datos enviados en el cuerpo de la solicitud
             $id = $_DELETE['id'] ?? null;
